@@ -1,0 +1,528 @@
+{
+ "Resources": {
+  "DataCollectionTableE44AE3C1": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "KeySchema": [
+     {
+      "AttributeName": "Value",
+      "KeyType": "HASH"
+     }
+    ],
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "Value",
+      "AttributeType": "S"
+     }
+    ],
+    "ProvisionedThroughput": {
+     "ReadCapacityUnits": 5,
+     "WriteCapacityUnits": 5
+    },
+    "TableName": "OnboardingDataCollection"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataCollectionTable/Resource"
+   }
+  },
+  "DataAdditionLambdafnServiceRoleCCAAA8CB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdafn/ServiceRole/Resource"
+   }
+  },
+  "DataAdditionLambdafnServiceRoleDefaultPolicy9B9FFBEF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchWriteItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "DataCollectionTableE44AE3C1",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DataAdditionLambdafnServiceRoleDefaultPolicy9B9FFBEF",
+    "Roles": [
+     {
+      "Ref": "DataAdditionLambdafnServiceRoleCCAAA8CB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdafn/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "DataAdditionLambdafnBA200EB3": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "bd5e30e19b0c9527969cd36ae6f562b9805f5a8733541c48f21bb5e27a5c39fc.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "DataAdditionLambdafnServiceRoleCCAAA8CB",
+      "Arn"
+     ]
+    },
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "DataCollectionTableE44AE3C1"
+      },
+      "resource1ARN": {
+       "Fn::ImportValue": "resource1ARN"
+      },
+      "ThresholdAmt": {
+       "Fn::ImportValue": "ThresholdAmt"
+      },
+      "EmailID": {
+       "Fn::ImportValue": "EmailID"
+      }
+     }
+    },
+    "FunctionName": "DataAdditionLambdafn",
+    "Handler": "index.handler",
+    "Runtime": "nodejs12.x",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "DataAdditionLambdafnServiceRoleDefaultPolicy9B9FFBEF",
+    "DataAdditionLambdafnServiceRoleCCAAA8CB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdafn/Resource",
+    "aws:asset:path": "asset.bd5e30e19b0c9527969cd36ae6f562b9805f5a8733541c48f21bb5e27a5c39fc",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "DataAdditionLambdaProviderframeworkonEventServiceRole073F6647": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "DependsOn": [
+    "DataCollectionTableE44AE3C1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdaProvider/framework-onEvent/ServiceRole/Resource"
+   }
+  },
+  "DataAdditionLambdaProviderframeworkonEventServiceRoleDefaultPolicy82D8362B": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DataAdditionLambdafnBA200EB3",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DataAdditionLambdafnBA200EB3",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DataAdditionLambdaProviderframeworkonEventServiceRoleDefaultPolicy82D8362B",
+    "Roles": [
+     {
+      "Ref": "DataAdditionLambdaProviderframeworkonEventServiceRole073F6647"
+     }
+    ]
+   },
+   "DependsOn": [
+    "DataCollectionTableE44AE3C1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdaProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "DataAdditionLambdaProviderframeworkonEventE8344DB0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "e7c95e1a12d903d913ebdd526c735f1ac58b2024882a5562110221fe685ebe85.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "DataAdditionLambdaProviderframeworkonEventServiceRole073F6647",
+      "Arn"
+     ]
+    },
+    "Description": "AWS CDK resource provider framework - onEvent (MainOnboardingMonitoringStack/DataAdditionLambdaProvider)",
+    "Environment": {
+     "Variables": {
+      "USER_ON_EVENT_FUNCTION_ARN": {
+       "Fn::GetAtt": [
+        "DataAdditionLambdafnBA200EB3",
+        "Arn"
+       ]
+      }
+     }
+    },
+    "Handler": "framework.onEvent",
+    "Runtime": "nodejs14.x",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "DataAdditionLambdaProviderframeworkonEventServiceRoleDefaultPolicy82D8362B",
+    "DataAdditionLambdaProviderframeworkonEventServiceRole073F6647",
+    "DataCollectionTableE44AE3C1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/DataAdditionLambdaProvider/framework-onEvent/Resource",
+    "aws:asset:path": "asset.e7c95e1a12d903d913ebdd526c735f1ac58b2024882a5562110221fe685ebe85",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SampleCustomResource": {
+   "Type": "AWS::CloudFormation::CustomResource",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "DataAdditionLambdaProviderframeworkonEventE8344DB0",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/SampleCustomResource/Default"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/01Pwa7CMAz7lnfvwnvsAFeY9M5ocJ+ytqCwtZGaFoSm/TvdBoiTHVuWnTWUJfz+4F0KbbqipxaGY0TdqSw1g3l4dGyyeMK2t6o6+5mMqkfXGoThP3kdif1kvfmoCB0MNS+JGQ/ck35M58JGJWWDIjYK7CbIN+yT7mzco+SC2gqnoK2a3bzpQv6idJLIrgkvU+AQ+EbGBlXNzic19X7xir2hZZtnY+Eqq9vfFjb596sQFSH5SM5CveAT5GSTxBcBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "MainOnboardingMonitoringStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-2"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
