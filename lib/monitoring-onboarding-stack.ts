@@ -13,58 +13,6 @@ export class MainOnboardingMonitoringStack extends Stack {
   constructor(scope: Construct, id: string, props: MainOnboardingMonitoringStackProps) {
     super(scope, id, props);
 
-  //   // Role for cloudbuild
-  //   const deployerRole = new iam.Role(this, `OnboardingMonitoringPackage-deployer-role`, 
-  //   {
-  //     assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
-  //     roleName: `OnboardingMonitoringPackage-deployer-role`,
-  //     managedPolicies: [
-  //       iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudFormationFullAccess')
-  //     ]
-  //   })
-
-  //   // Artifact for cloudbuild
-  //   const sourceOutput = new codepipeline.Artifact();
-
-  //   // codebuild
-  //   const cdkDeployProject = new codebuild.Project(this, `OnboardingMonitoringPackage-deploy-project-${stageName}`, {
-  //     projectName: `codebuild-01`,
-  //     role: deployerRole,
-  //     environment: {
-  //       buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-  //       privileged: false
-  //     },
-  //     buildSpec: codebuild.BuildSpec.fromObject({
-  //       version: "0.2",
-  //       phases: {
-  //         pre_build: {
-  //           commands: [
-  //             'env',
-  //           ]
-  //         },
-  //         build: {
-  //           commands: [
-  //             `npm install`,
-  //             'echo "starting build"',
-  //             'npm run build:stage',
-  //             'npm publish',
-  //             'echo "published"'
-  //           ]
-  //         },
-  //         post_build: {
-  //           commands: [
-  //           ]
-  //         }
-  //       }
-  //     })
-  //   });
-  
-  // const cdkDeployAction = new codepipeline_actions.CodeBuildAction({
-  //   actionName: 'CodeBuild',
-  //   project: cdkDeployProject,
-  //   input: sourceOutput
-  // });
-
   // DB to which data should be added
   const Datatable = props
     ? new dynamodb.Table(this, 'DataCollectionTable', {
